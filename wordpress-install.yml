@@ -1,0 +1,36 @@
+---
+- name: "Installing Httpd And Creating Virtualhost"
+  hosts: amazon
+  become: yes
+  vars:
+    domain: www.ihraz.com
+    mysql_root_password: mysqlroot123
+    wordpress_user: ihraz
+    wordpress_password: ihraz123
+    wordpress_database: ihraz
+  tasks:
+    
+    - name: "Installing Apache Webserver"
+      yum:
+        name:
+          - httpd
+          - php
+          - mariadb-server
+          - MySQL-python
+          - php-mysql
+        state: present
+        
+    - name: "Creating Virtualhost"
+      template: src=virtualhost.j2 dest="/etc/httpd/conf.d/{{domain}}.conf"
+        
+    - name: "Creating DocumentRoot"
+      file: path="/var/www/html/{{domain}}" state=directory
+        
+    - name: "Restarting/Enabling Apache Webserver"
+      service:
+        name: "{{item}}"
+        state: restarted 
+        enabled: yes
+      with_items:
+         - httpd
+         - mariadb
